@@ -1,0 +1,100 @@
+# Consensus Peak Pipeline (Pure Python)
+
+This project builds consensus peak regions from multiple narrowPeak files and outputs:
+
+1. merged consensus BED (`chr`, `start`, `end`)
+2. support matrix (`support_count` + one `0/1` column per sample)
+
+No bedtools dependency is required.
+
+## Input config format
+
+Config must be CSV or TSV, with required header `ID` and `PeakFile`.
+
+CSV example:
+
+```text
+ID,PeakFile
+SampleID1,/absolute/path/to/sample1.narrowPeak
+SampleID2,/absolute/path/to/sample2.narrowPeak
+```
+
+TSV example:
+
+```text
+ID	PeakFile
+SampleID1	/absolute/path/to/sample1.narrowPeak
+SampleID2	/absolute/path/to/sample2.narrowPeak
+```
+
+Lines starting with `#` and blank lines are ignored.
+
+## Step-by-step scripts
+
+Step scripts are in `src/`.
+
+1. Validate config and summarize samples:
+
+```bash
+python3 src/step1_validate_config.py \
+  --config samples.config.tsv \
+  --out-manifest samples.manifest.tsv
+```
+
+2. Build merged consensus regions:
+
+```bash
+python3 src/step2_build_consensus.py \
+  --config samples.config.tsv \
+  --out-consensus consensus.bed
+```
+
+3. Build support matrix:
+
+```bash
+python3 src/step3_build_matrix.py \
+  --config samples.config.tsv \
+  --out-matrix consensus.support.tsv
+```
+
+4. Plot UpSet figure:
+
+```bash
+python3 src/step4_plot_upset.py \
+  --matrix consensus.support.tsv \
+  --out-pdf consensus.upset.pdf \
+  --top-n 20
+```
+
+4R. Plot UpSet figure (R + ComplexHeatmap):
+
+```bash
+Rscript src/step4_plot_upset.R \
+  --matrix consensus.support.tsv \
+  --out-pdf consensus.upset.R.pdf \
+  --top-n 20
+```
+
+## One-command pipeline
+
+Main script is at project root: `chip_consensus.py`.
+
+```bash
+python3 chip_consensus.py \
+  --config samples.config.tsv \
+  --prefix TFs \
+  --out-dir results
+```
+
+Outputs will be written to `results/`.
+Generated files:
+- `TFs.consensus.bed`
+- `TFs.consensus.support.tsv`
+- `TFs.consensus.upset.pdf` (if you run Python step 4)
+- `TFs.consensus.upset.R.pdf` (if you run R step 4)
+
+## Output matrix columns
+
+`chr  start  end  support_count  SampleID1  SampleID2  ...`
+
+Support rule: if a sample has any overlap (>=1 bp) with a consensus region, mark as `1`; otherwise `0`.

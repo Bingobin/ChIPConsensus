@@ -1,0 +1,5 @@
+ID,PeakFile
+KSM,test/peaks/KSM_KAP1_peaks.narrowPeak
+M13,test/peaks/M13_KAP1_peaks.narrowPeak
+MV411,test/peaks/MV411_KAP1_peaks.narrowPeak
+OA3,test/peaks/OA3_KAP1_peaks.narrowPeak

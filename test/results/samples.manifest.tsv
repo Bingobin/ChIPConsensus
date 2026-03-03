@@ -1,0 +1,5 @@
+sample_id	peak_path	peak_count	merged_peak_count
+KSM	/Users/liuyabin/Downloads/Github/ChIPConsensus/test/peaks/KSM_KAP1_peaks.narrowPeak	5982	5982
+M13	/Users/liuyabin/Downloads/Github/ChIPConsensus/test/peaks/M13_KAP1_peaks.narrowPeak	22982	22982
+MV411	/Users/liuyabin/Downloads/Github/ChIPConsensus/test/peaks/MV411_KAP1_peaks.narrowPeak	12332	12332
+OA3	/Users/liuyabin/Downloads/Github/ChIPConsensus/test/peaks/OA3_KAP1_peaks.narrowPeak	24362	24362
