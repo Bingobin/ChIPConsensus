@@ -1,4 +1,4 @@
-# Consensus Peak Pipeline (Pure Python)
+# ChIP Consensus Peaks Toolkit
 
 This program is a lightweight ChIP peak integration pipeline for multi-sample narrowPeak datasets. It takes peak calls from multiple samples (for example different patients, cell lines, or TF ChIP runs), merges overlapping regions across all samples into a consensus peak set, then quantifies sample-level support for each consensus region. The goal is to provide a reproducible, scriptable way to move from per-sample peak files to comparable cross-sample overlap results.
 
