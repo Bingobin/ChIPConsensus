@@ -1,11 +1,13 @@
 # Consensus Peak Pipeline (Pure Python)
 
-This project builds consensus peak regions from multiple narrowPeak files and outputs:
+This program is a lightweight ChIP peak integration pipeline for multi-sample narrowPeak datasets. It takes peak calls from multiple samples (for example different patients, cell lines, or TF ChIP runs), merges overlapping regions across all samples into a consensus peak set, then quantifies sample-level support for each consensus region. The goal is to provide a reproducible, scriptable way to move from per-sample peak files to comparable cross-sample overlap results.
+
+The pipeline is implemented in pure Python (no bedtools required), supports strict CSV/TSV config input with explicit sample metadata (`ID`, `PeakFile`), and produces both tabular outputs and UpSet visualization inputs. It is suitable for downstream tasks such as overlap analysis, recurrent peak discovery, and sample-by-sample presence/absence pattern comparison.
+
+Main outputs:
 
 1. merged consensus BED (`chr`, `start`, `end`)
 2. support matrix (`support_count` + one `0/1` column per sample)
-
-No bedtools dependency is required.
 
 ## Input config format
 
