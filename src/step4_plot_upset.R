@@ -95,7 +95,7 @@ p_upset <- UpSet(
 )
 
 draw(p_upset)
-dev.off()
+invisible(dev.off())
 
 cat(sprintf("[OK] Samples: %d\n", length(sample_ids)))
 cat(sprintf("[OK] Intersections: %d\n", ncol(comb_mat)))

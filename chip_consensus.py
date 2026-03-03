@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
 
 from src.consensus_lib import (
     build_consensus,
@@ -96,16 +97,42 @@ def main() -> None:
     )
 
     upset_path = os.path.join(out_dir, f"{args.prefix}.consensus.upset.pdf")
+    upset_r_path = os.path.join(out_dir, f"{args.prefix}.consensus.upset.R.pdf")
     if args.no_upset:
         print("[INFO] Step 4/4: skipped UpSet plotting (--no-upset).", flush=True)
     else:
-        print("[INFO] Step 4/4: plot UpSet PDF...", flush=True)
+        print("[INFO] Step 4/4: plot UpSet PDFs (Python + R)...", flush=True)
         try:
             upset_sample_ids, combo_counts = load_intersection_counts(matrix_path)
             plot_upset(upset_sample_ids, combo_counts, upset_path, args.upset_top_n)
-            print(f"[OK] UpSet PDF written: {upset_path}", flush=True)
+            print(f"[OK] UpSet PDF (Python) written: {upset_path}", flush=True)
         except Exception as exc:
-            print(f"[WARN] UpSet plotting failed: {exc}", flush=True)
+            print(f"[WARN] UpSet plotting failed (Python): {exc}", flush=True)
+
+        try:
+            subprocess.run(
+                [
+                    "Rscript",
+                    "src/step4_plot_upset.R",
+                    "--matrix",
+                    matrix_path,
+                    "--out-pdf",
+                    upset_r_path,
+                    "--top-n",
+                    str(args.upset_top_n),
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            print(f"[OK] UpSet PDF (R) written: {upset_r_path}", flush=True)
+        except Exception as exc:
+            msg = str(exc)
+            if isinstance(exc, subprocess.CalledProcessError):
+                stderr = (exc.stderr or "").strip()
+                if stderr:
+                    msg = stderr.splitlines()[-1]
+            print(f"[WARN] UpSet plotting failed (R): {msg}", flush=True)
 
     print(f"[OK] Samples: {len(sample_ids)}")
     print(f"[OK] Consensus regions: {len(consensus)}")

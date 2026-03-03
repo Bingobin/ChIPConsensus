@@ -93,12 +93,13 @@ Generated files:
 - `TFs.samples.manifest.tsv`
 - `TFs.consensus.bed`
 - `TFs.consensus.support.tsv`
-- `TFs.consensus.upset.pdf` (default: auto-plot in one-command pipeline)
-- `TFs.consensus.upset.R.pdf` (if you run R step 4)
+- `TFs.consensus.upset.pdf` (default: auto-plot, Python version)
+- `TFs.consensus.upset.R.pdf` (default: auto-plot, R version)
 
 Notes for one-command pipeline:
 - It prints step-by-step runtime logs (`Step 1/4` ... `Step 4/4`).
-- If UpSet plotting fails (e.g. missing matplotlib), pipeline will continue and print a warning (`[WARN] UpSet plotting failed: ...`).
+- By default it tries both Python and R UpSet plotting.
+- If either UpSet plotting step fails (e.g. missing matplotlib or R package), pipeline continues and prints warning logs.
 - To skip plotting: add `--no-upset`.
 
 ## Output matrix columns
