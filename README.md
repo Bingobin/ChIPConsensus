@@ -90,10 +90,16 @@ python3 chip_consensus.py \
 
 Outputs will be written to `results/`.
 Generated files:
+- `TFs.samples.manifest.tsv`
 - `TFs.consensus.bed`
 - `TFs.consensus.support.tsv`
-- `TFs.consensus.upset.pdf` (if you run Python step 4)
+- `TFs.consensus.upset.pdf` (default: auto-plot in one-command pipeline)
 - `TFs.consensus.upset.R.pdf` (if you run R step 4)
+
+Notes for one-command pipeline:
+- It prints step-by-step runtime logs (`Step 1/4` ... `Step 4/4`).
+- If UpSet plotting fails (e.g. missing matplotlib), pipeline will continue and print a warning (`[WARN] UpSet plotting failed: ...`).
+- To skip plotting: add `--no-upset`.
 
 ## Output matrix columns
 
