@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import csv
 import os
 import re
 from dataclasses import dataclass
@@ -47,23 +48,37 @@ def load_samples_from_config(config_path: str) -> List[Sample]:
     seen_ids = set()
     delimiter: str | None = None
     header_checked = False
+
+    with open(config_path, "r", encoding="utf-8") as fh:
+        for raw in fh:
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "," in line:
+                delimiter = ","
+            elif "\t" in line:
+                delimiter = "\t"
+            else:
+                raise ValueError(
+                    "Invalid config delimiter. Use CSV (',') or TSV ('\\t') with header: ID,PeakFile."
+                )
+            break
+
+    if delimiter is None:
+        raise ValueError("No valid header found. First non-comment line must be: ID,PeakFile.")
+
     with open(config_path, "r", encoding="utf-8") as fh:
         for line_no, raw in enumerate(fh, start=1):
             line = raw.strip()
             if not line or line.startswith("#"):
                 continue
 
-            if delimiter is None:
-                if "," in line:
-                    delimiter = ","
-                elif "\t" in line:
-                    delimiter = "\t"
-                else:
-                    raise ValueError(
-                        "Invalid config delimiter. Use CSV (',') or TSV ('\\t') with header: ID,PeakFile."
-                    )
+            if delimiter == ",":
+                fields = next(csv.reader([line], skipinitialspace=True))
+                fields = [f.strip() for f in fields]
+            else:
+                fields = [f.strip() for f in line.split("\t")]
 
-            fields = [f.strip() for f in line.split(delimiter)]
             if len(fields) != 2:
                 raise ValueError(
                     f"Invalid config at line {line_no}: expected 2 columns, got {len(fields)}"

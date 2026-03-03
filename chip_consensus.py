@@ -34,11 +34,6 @@ def main() -> None:
         default=".",
         help="Root output directory.",
     )
-    parser.add_argument(
-        "--no-header",
-        action="store_true",
-        help="Do not write matrix header line.",
-    )
     args = parser.parse_args()
 
     samples = load_samples_from_config(args.config)
@@ -57,7 +52,6 @@ def main() -> None:
         sample_ids=sample_ids,
         sample_vectors=sample_vectors,
         support_counts=support_counts,
-        header=not args.no_header,
     )
 
     print(f"[OK] Samples: {len(sample_ids)}")
