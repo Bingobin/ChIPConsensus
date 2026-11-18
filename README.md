@@ -2,7 +2,7 @@
 
 This program is a lightweight ChIP peak integration pipeline for multi-sample narrowPeak datasets. It takes peak calls from multiple samples (for example different patients, cell lines, or TF ChIP runs), merges overlapping regions across all samples into a consensus peak set, then quantifies sample-level support for each consensus region. The goal is to provide a reproducible, scriptable way to move from per-sample peak files to comparable cross-sample overlap results.
 
-The pipeline is implemented in pure Python (no bedtools required), supports strict CSV/TSV config input with explicit sample metadata (`ID`, `PeakFile`), and produces both tabular outputs and UpSet visualization inputs. It is suitable for downstream tasks such as overlap analysis, recurrent peak discovery, and sample-by-sample presence/absence pattern comparison.
+The pipeline is implemented in pure Python (no bedtools required), supports CSV/TSV config input with named sample columns (`ID`, `PeakFile`), and produces both tabular outputs and UpSet visualization inputs. It is suitable for downstream tasks such as overlap analysis, recurrent peak discovery, and sample-by-sample presence/absence pattern comparison.
 
 Main outputs:
 
@@ -11,7 +11,10 @@ Main outputs:
 
 ## Input config format
 
-Config must be CSV or TSV, with required header `ID` and `PeakFile`.
+Config must be CSV or TSV, with required columns `ID` and `PeakFile`. Columns are
+matched by name, not position: their order can vary, and extra columns (such as
+`Big`) are ignored. Column names are case-insensitive and surrounding whitespace
+is ignored. The original two-column format remains supported.
 
 CSV example:
 
@@ -19,6 +22,14 @@ CSV example:
 ID,PeakFile
 SampleID1,/absolute/path/to/sample1.narrowPeak
 SampleID2,/absolute/path/to/sample2.narrowPeak
+```
+
+Extra-column example (also valid):
+
+```text
+ID,PeakFile,Big
+SampleID1,/absolute/path/to/sample1.narrowPeak,/absolute/path/to/sample1.bw
+SampleID2,/absolute/path/to/sample2.narrowPeak,/absolute/path/to/sample2.bw
 ```
 
 TSV example:
@@ -30,6 +41,8 @@ SampleID2	/absolute/path/to/sample2.narrowPeak
 ```
 
 Lines starting with `#` and blank lines are ignored.
+Each sample must have a non-empty, unique `ID` and a non-empty `PeakFile` pointing
+to an existing file. Ignored columns do not need to contain existing file paths.
 
 ## Step-by-step scripts
 

@@ -47,53 +47,48 @@ def load_samples_from_config(config_path: str) -> List[Sample]:
     samples: List[Sample] = []
     seen_ids = set()
     delimiter: str | None = None
-    header_checked = False
+    column_indices: Dict[str, int] | None = None
+    required_columns = ("ID", "PeakFile")
 
-    with open(config_path, "r", encoding="utf-8") as fh:
-        for raw in fh:
-            line = raw.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "," in line:
-                delimiter = ","
-            elif "\t" in line:
-                delimiter = "\t"
-            else:
-                raise ValueError(
-                    "Invalid config delimiter. Use CSV (',') or TSV ('\\t') with header: ID,PeakFile."
-                )
-            break
-
-    if delimiter is None:
-        raise ValueError("No valid header found. First non-comment line must be: ID,PeakFile.")
-
-    with open(config_path, "r", encoding="utf-8") as fh:
+    with open(config_path, "r", encoding="utf-8-sig") as fh:
         for line_no, raw in enumerate(fh, start=1):
-            line = raw.strip()
-            if not line or line.startswith("#"):
+            line = raw.rstrip("\r\n")
+            if not line.strip() or line.lstrip().startswith("#"):
                 continue
 
-            if delimiter == ",":
-                fields = next(csv.reader([line], skipinitialspace=True))
-                fields = [f.strip() for f in fields]
-            else:
-                fields = [f.strip() for f in line.split("\t")]
-
-            if len(fields) != 2:
-                raise ValueError(
-                    f"Invalid config at line {line_no}: expected 2 columns, got {len(fields)}"
-                )
-
-            if not header_checked:
-                if fields[0].lower() != "id" or fields[1].lower() != "peakfile":
+            if delimiter is None:
+                try:
+                    delimiter = csv.Sniffer().sniff(line, delimiters=",\t").delimiter
+                except csv.Error as exc:
                     raise ValueError(
-                        "Config header must be exactly: ID,PeakFile (CSV) or ID<TAB>PeakFile (TSV)."
+                        "Invalid config delimiter. Use CSV (',') or TSV ('\\t') "
+                        "with required columns: ID, PeakFile."
+                    ) from exc
+
+            fields = [
+                field.strip()
+                for field in next(csv.reader([line], delimiter=delimiter, skipinitialspace=True))
+            ]
+
+            if column_indices is None:
+                header = [field.lower() for field in fields]
+                missing = [name for name in required_columns if name.lower() not in header]
+                if missing:
+                    raise ValueError(
+                        f"Config header is missing required columns: {', '.join(missing)}."
                     )
-                header_checked = True
+                for name in required_columns:
+                    if header.count(name.lower()) > 1:
+                        raise ValueError(f"Config header has duplicate required column: {name}.")
+                column_indices = {name: header.index(name.lower()) for name in required_columns}
                 continue
 
-            sample_id = fields[0]
-            peak_path = fields[1]
+            for name, index in column_indices.items():
+                if index >= len(fields) or not fields[index]:
+                    raise ValueError(f"Invalid config at line {line_no}: missing value for {name}.")
+
+            sample_id = fields[column_indices["ID"]]
+            peak_path = fields[column_indices["PeakFile"]]
             abs_peak_path = os.path.abspath(peak_path)
             if sample_id in seen_ids:
                 raise ValueError(f"Duplicate sample ID '{sample_id}' at line {line_no}")
@@ -104,8 +99,8 @@ def load_samples_from_config(config_path: str) -> List[Sample]:
             seen_ids.add(sample_id)
             samples.append(Sample(sample_id=sample_id, peak_path=abs_peak_path))
 
-    if not header_checked:
-        raise ValueError("No valid header found. First non-comment line must be: ID,PeakFile.")
+    if column_indices is None:
+        raise ValueError("No valid header found. Config must contain ID and PeakFile columns.")
     if not samples:
         raise ValueError("No samples found in config.")
     return samples
